@@ -22,10 +22,6 @@ export interface PlayerInputMessage {
   down: boolean;
   left: boolean;
   right: boolean;
-  x: number;
-  y: number;
-  vx: number;
-  vy: number;
   aimX: number;
   aimY: number;
   attacking: boolean;
