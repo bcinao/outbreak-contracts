@@ -16,6 +16,13 @@ export interface JoinOptions {
   preferredFaction?: Faction;
 }
 
+export interface ViewportInterest {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+}
+
 export interface PlayerInputMessage {
   seq: number;
   up: boolean;
@@ -25,6 +32,7 @@ export interface PlayerInputMessage {
   aimX: number;
   aimY: number;
   attacking: boolean;
+  viewport: ViewportInterest;
 }
 
 export interface AttackMessage {
