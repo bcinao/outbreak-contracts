@@ -134,3 +134,5 @@ export const GameRules = {
   flagCaptureSeconds: 6,
   humanFlagCaptureSpeedMultiplier: 1.2
 } as const;
+
+export * from './simulation';
