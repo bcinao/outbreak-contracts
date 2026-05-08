@@ -44,6 +44,10 @@ export interface ConvertMessage {
   targetFaction: Faction;
 }
 
+export interface BotsEnabledMessage {
+  enabled: boolean;
+}
+
 export interface EntitySnapshot {
   id: string;
   kind: EntityKind;
@@ -70,7 +74,8 @@ export const ClientMessage = {
   Input: 'input',
   Attack: 'attack',
   Convert: 'convert',
-  Reset: 'reset'
+  Reset: 'reset',
+  SetBotsEnabled: 'setBotsEnabled'
 } as const;
 
 export const ServerMessage = {
@@ -129,8 +134,12 @@ export const GameRules = {
   maxHpZombie: 300,
   respawnMs: 2000,
   botSpawnMoveCooldownMs: 1000,
+  botAiTickMs: 100,
+  botDetectionRadius: 1300,
+  spatialGridCellSize: 512,
   botAttackPreferenceChance: 0.75,
   botsPerHumanPlayer: 3,
+  maxBotsPerRoom: 120,
   flagCaptureSeconds: 6,
   humanFlagCaptureSpeedMultiplier: 1.2
 } as const;
