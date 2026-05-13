@@ -48,6 +48,10 @@ export interface BotsEnabledMessage {
   enabled: boolean;
 }
 
+export type InputValidationResult =
+  | { ok: true; value: PlayerInputMessage }
+  | { ok: false; reason: string };
+
 export interface EntitySnapshot {
   id: string;
   kind: EntityKind;
@@ -143,5 +147,90 @@ export const GameRules = {
   flagCaptureSeconds: 6,
   humanFlagCaptureSpeedMultiplier: 1.2
 } as const;
+
+const MAX_INPUT_SEQ = 1_000_000_000;
+
+export function validatePlayerInputMessage(message: unknown): InputValidationResult {
+  if (!isRecord(message)) {
+    return { ok: false, reason: 'input payload must be an object' };
+  }
+
+  if (
+    typeof message.up !== 'boolean' ||
+    typeof message.down !== 'boolean' ||
+    typeof message.left !== 'boolean' ||
+    typeof message.right !== 'boolean' ||
+    typeof message.attacking !== 'boolean'
+  ) {
+    return { ok: false, reason: 'movement and attack fields must be booleans' };
+  }
+
+  const seq = finiteNumber(message.seq);
+  const aimX = finiteNumber(message.aimX);
+  const aimY = finiteNumber(message.aimY);
+  if (seq === undefined || aimX === undefined || aimY === undefined) {
+    return { ok: false, reason: 'seq and aim fields must be finite numbers' };
+  }
+
+  const viewport = validateViewportInterest(message.viewport);
+  if (!viewport.ok) {
+    return viewport;
+  }
+
+  return {
+    ok: true,
+    value: {
+      seq: clampValue(Math.trunc(seq), 0, MAX_INPUT_SEQ),
+      up: message.up,
+      down: message.down,
+      left: message.left,
+      right: message.right,
+      aimX: clampValue(aimX, 0, GameRules.mapWidth),
+      aimY: clampValue(aimY, 0, GameRules.mapHeight),
+      attacking: message.attacking,
+      viewport: viewport.value
+    }
+  };
+}
+
+type ViewportValidationResult =
+  | { ok: true; value: ViewportInterest }
+  | { ok: false; reason: string };
+
+function validateViewportInterest(value: unknown): ViewportValidationResult {
+  if (!isRecord(value)) {
+    return { ok: false, reason: 'viewport must be an object' };
+  }
+
+  const x = finiteNumber(value.x);
+  const y = finiteNumber(value.y);
+  const width = finiteNumber(value.width);
+  const height = finiteNumber(value.height);
+  if (x === undefined || y === undefined || width === undefined || height === undefined) {
+    return { ok: false, reason: 'viewport fields must be finite numbers' };
+  }
+
+  return {
+    ok: true,
+    value: {
+      x,
+      y,
+      width,
+      height
+    }
+  };
+}
+
+function finiteNumber(value: unknown): number | undefined {
+  return typeof value === 'number' && Number.isFinite(value) ? value : undefined;
+}
+
+function clampValue(value: number, min: number, max: number): number {
+  return Math.max(min, Math.min(max, value));
+}
+
+function isRecord(value: unknown): value is Record<string, unknown> {
+  return typeof value === 'object' && value !== null && !Array.isArray(value);
+}
 
 export * from './simulation';
